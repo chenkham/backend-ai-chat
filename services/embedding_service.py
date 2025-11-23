@@ -1,31 +1,27 @@
 """
-Embedding service using Sentence-Transformers.
+Embedding service using Cohere API.
 """
-from sentence_transformers import SentenceTransformer
+import cohere
+import os
 from typing import List
 import config
 
 
 class EmbeddingService:
-    """Generates embeddings using Sentence-Transformers."""
+    """Generates embeddings using Cohere API."""
     
     def __init__(self):
-        self.model_name = config.EMBEDDING_MODEL_NAME
-        self.model = None
-    
-    def _load_model(self):
-        """Load the Sentence-Transformers model lazily."""
-        if self.model is None:
-            try:
-                print(f"Loading embedding model: {self.model_name}")
-                self.model = SentenceTransformer(self.model_name)
-                print(f"Model loaded successfully. Dimension: {config.EMBEDDING_DIMENSION}")
-            except Exception as e:
-                raise Exception(f"Error loading embedding model: {str(e)}")
+        self.api_key = os.getenv("COHERE_API_KEY")
+        if not self.api_key:
+            raise Exception("COHERE_API_KEY environment variable not set")
+        
+        self.client = cohere.Client(self.api_key)
+        self.model = "embed-english-light-v3.0"  # 384 dimensions, free tier
+        print(f"Cohere embedding service initialized with model: {self.model}")
     
     def generate_embedding(self, text: str) -> List[float]:
         """
-        Generate embedding for a single text.
+        Generate embedding for a single text using Cohere API.
         
         Args:
             text: Input text
@@ -33,18 +29,19 @@ class EmbeddingService:
         Returns:
             Embedding vector as list of floats
         """
-        if not self.model:
-            self._load_model()
-        
         try:
-            embedding = self.model.encode(text, convert_to_numpy=True)
-            return embedding.tolist()
+            response = self.client.embed(
+                texts=[text],
+                model=self.model,
+                input_type="search_document"
+            )
+            return response.embeddings[0]
         except Exception as e:
-            raise Exception(f"Error generating embedding: {str(e)}")
+            raise Exception(f"Error generating embedding with Cohere: {str(e)}")
     
     def generate_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
         """
-        Generate embeddings for multiple texts in batch.
+        Generate embeddings for multiple texts in batch using Cohere API.
         More efficient than calling generate_embedding multiple times.
         
         Args:
@@ -53,14 +50,15 @@ class EmbeddingService:
         Returns:
             List of embedding vectors
         """
-        if not self.model:
-            self._load_model()
-        
         try:
-            embeddings = self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
-            return embeddings.tolist()
+            response = self.client.embed(
+                texts=texts,
+                model=self.model,
+                input_type="search_document"
+            )
+            return response.embeddings
         except Exception as e:
-            raise Exception(f"Error generating embeddings: {str(e)}")
+            raise Exception(f"Error generating embeddings with Cohere: {str(e)}")
     
     def get_embedding_dimension(self) -> int:
         """Get the dimension of the embeddings."""

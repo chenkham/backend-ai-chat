@@ -16,9 +16,8 @@ BASE_DIR = Path(__file__).parent
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
-# Embedding Model Configuration
-EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-EMBEDDING_DIMENSION = 384  # Dimension for all-MiniLM-L6-v2
+# Embedding Configuration
+EMBEDDING_DIMENSION = 384  # Dimension for Cohere embed-english-light-v3.0
 
 # File Upload Configuration
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))

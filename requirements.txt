@@ -3,4 +3,4 @@ uvicorn[standard]
 pypdf
 python-dotenv
 pinecone-client
-sentence-transformers==2.2.2
+cohere
