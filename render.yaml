@@ -25,3 +25,5 @@ services:
         value: 384
       - key: DEFAULT_TOP_K
         value: 5
+      - key: CORS_ORIGINS
+        value: "*"
