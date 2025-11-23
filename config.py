@@ -20,7 +20,8 @@ PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 EMBEDDING_DIMENSION = 384  # Dimension for Cohere embed-english-light-v3.0
 
 # File Upload Configuration
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))
+# Use /tmp for serverless/container environments (Render, Vercel, etc.)
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/tmp/uploads"))
 UPLOAD_DIR.mkdir(exist_ok=True)
 MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 31457280))  # 30MB default
 
@@ -29,7 +30,8 @@ CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 800))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 100))
 
 # Database Configuration
-DATABASE_PATH = BASE_DIR / "chat_history.db"
+# Use /tmp for serverless/container environments
+DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "/tmp/chat_history.db"))
 
 # API Configuration
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
