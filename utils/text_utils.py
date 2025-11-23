@@ -18,8 +18,8 @@ def clean_text(text: str) -> str:
     # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text)
     
-    # Remove special characters but keep basic punctuation
-    text = re.sub(r'[^\w\s.,!?;:()\-\'"]+', '', text)
+    # Remove control characters but keep everything else (unicode support)
+    text = "".join(ch for ch in text if ch.isprintable())
     
     # Strip leading/trailing whitespace
     text = text.strip()
@@ -83,7 +83,7 @@ def chunk_text(text: str, max_tokens: int = 800, overlap: int = 100) -> List[str
     return chunks
 
 
-def validate_chunk(chunk: str, min_length: int = 50) -> bool:
+def validate_chunk(chunk: str, min_length: int = 10) -> bool:
     """
     Validate if a chunk is meaningful (not too short).
     

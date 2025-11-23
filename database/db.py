@@ -21,6 +21,7 @@ class ChatDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
+        # Chat history table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS chat_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,6 +30,18 @@ class ChatDatabase:
                 content TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 metadata TEXT
+            )
+        """)
+        
+        # Sessions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                mode TEXT NOT NULL,
+                pdf_id TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
         
@@ -124,6 +137,125 @@ class ChatDatabase:
         conn.close()
         
         return deleted_count
+    
+    # Session Management
+    
+    def create_session(
+        self,
+        session_id: str,
+        name: str,
+        mode: str,
+        pdf_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Create a new chat session."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        
+        cursor.execute("""
+            INSERT INTO sessions (id, name, mode, pdf_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (session_id, name, mode, pdf_id, now, now))
+        
+        conn.commit()
+        conn.close()
+        
+        return {
+            'id': session_id,
+            'name': name,
+            'mode': mode,
+            'pdf_id': pdf_id,
+            'created_at': now,
+            'updated_at': now
+        }
+    
+    def get_all_sessions(self) -> List[Dict[str, Any]]:
+        """Get all chat sessions."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM sessions 
+            ORDER BY updated_at DESC
+        """)
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
+        sessions = []
+        for row in rows:
+            sessions.append({
+                'id': row['id'],
+                'name': row['name'],
+                'mode': row['mode'],
+                'pdf_id': row['pdf_id'],
+                'created_at': row['created_at'],
+                'updated_at': row['updated_at']
+            })
+        
+        return sessions
+    
+    def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific session by ID."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM sessions WHERE id = ?
+        """, (session_id,))
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            return {
+                'id': row['id'],
+                'name': row['name'],
+                'mode': row['mode'],
+                'pdf_id': row['pdf_id'],
+                'created_at': row['created_at'],
+                'updated_at': row['updated_at']
+            }
+        return None
+    
+    def delete_session_and_messages(self, session_id: str) -> bool:
+        """Delete a session and all its messages."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Delete messages first
+        cursor.execute("""
+            DELETE FROM chat_history WHERE session_id = ?
+        """, (session_id,))
+        
+        # Delete session
+        cursor.execute("""
+            DELETE FROM sessions WHERE id = ?
+        """, (session_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return True
+    
+    def update_session_timestamp(self, session_id: str):
+        """Update the updated_at timestamp for a session."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        
+        cursor.execute("""
+            UPDATE sessions SET updated_at = ? WHERE id = ?
+        """, (now, session_id))
+        
+        conn.commit()
+        conn.close()
 
 
 # Singleton instance

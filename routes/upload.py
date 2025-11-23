@@ -24,16 +24,21 @@ async def upload_pdf(file: UploadFile = File(...)):
     5. Store in Pinecone
     """
     # Validate file type
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided")
+    
     if not file.filename.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        raise HTTPException(status_code=400, detail=f"Only PDF files are allowed. Got: {file.filename}")
     
     # Check file size
     file_content = await file.read()
     if len(file_content) > config.MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400, 
-            detail=f"File size exceeds maximum allowed size of {config.MAX_FILE_SIZE} bytes"
+            detail=f"File size ({len(file_content)} bytes) exceeds maximum allowed size of {config.MAX_FILE_SIZE} bytes"
         )
+    
+    print(f"Processing PDF: {file.filename}, size: {len(file_content)} bytes")
     
     try:
         # Get services
@@ -48,7 +53,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         chunks = pdf_processor.process_pdf(file_path, file.filename)
         
         if not chunks:
-            raise HTTPException(status_code=400, detail="No valid text chunks extracted from PDF")
+            raise HTTPException(status_code=400, detail="No text found in PDF. It might be scanned (image-only) or protected. Please use a text-based PDF.")
         
         # Extract text from chunks for embedding
         chunk_texts = [chunk['text'] for chunk in chunks]
@@ -66,12 +71,17 @@ async def upload_pdf(file: UploadFile = File(...)):
         # Upsert to Pinecone
         pinecone_service.upsert_embeddings(embeddings, metadata_list)
         
-        return PDFUploadResponse(
-            success=True,
-            message=f"Successfully processed {file.filename}",
-            chunks_processed=len(chunks),
-            filename=file.filename
-        )
+        # Return frontend-compatible format
+        return {
+            "success": True,
+            "pdf_id": file.filename,
+            "number_of_chunks": len(chunks),
+            "message": f"Successfully processed {file.filename}",
+            "filename": file.filename,
+            "chunks_processed": len(chunks)
+        }
+
         
     except Exception as e:
+        print(f"Error processing PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")

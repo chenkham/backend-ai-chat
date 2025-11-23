@@ -10,6 +10,7 @@ import config
 from routes.upload import router as upload_router
 from routes.query import router as query_router
 from routes.chat import router as chat_router
+from routes.sessions import router as sessions_router
 
 
 @asynccontextmanager
@@ -69,6 +70,92 @@ app.add_middleware(
 app.include_router(upload_router, tags=["PDF Upload"])
 app.include_router(query_router, tags=["Query"])
 app.include_router(chat_router, tags=["Chat History"])
+app.include_router(sessions_router, tags=["Sessions"])
+
+
+# Wrapper endpoints for frontend compatibility
+
+from fastapi import UploadFile, File
+from database.models import QueryRequest, RetrievedChunk, ChatMessage
+from services.embedding_service import get_embedding_service
+from services.pinecone_service import get_pinecone_service
+from database.db import get_database
+
+
+from pydantic import BaseModel
+
+class RetrieveRequest(BaseModel):
+    query: str
+    pdf_id: str = None
+    top_k: int = 5
+
+@app.post("/retrieve", tags=["Query"])
+async def retrieve_chunks(request: RetrieveRequest):
+    """
+    Retrieve chunks for a query (wrapper for /query endpoint).
+    Frontend compatibility endpoint.
+    """
+    try:
+        embedding_service = get_embedding_service()
+        pinecone_service = get_pinecone_service()
+        
+        # Generate query embedding
+        query_embedding = embedding_service.generate_embedding(request.query)
+        
+        # Query Pinecone (optionally filter by pdf_id if provided)
+        filter_dict = {"filename": request.pdf_id} if request.pdf_id else None
+        results = pinecone_service.query(
+            query_embedding=query_embedding,
+            top_k=request.top_k,
+            filter_dict=filter_dict
+        )
+        
+        # Return just the text chunks
+        chunks = [result['text'] for result in results]
+        
+        return {"chunks": chunks}
+        
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Error retrieving chunks: {str(e)}")
+
+
+class SaveMessageWrapperRequest(BaseModel):
+    session_id: str
+    role: str
+    content: str
+
+@app.post("/messages", response_model=ChatMessage, tags=["Chat History"])
+async def save_message_endpoint(request: SaveMessageWrapperRequest):
+    """
+    Save a message (wrapper for chat service).
+    Frontend compatibility endpoint.
+    """
+    try:
+        db = get_database()
+        
+        # Save message
+        message_id = db.save_message(
+            session_id=request.session_id,
+            message_type=request.role,
+            content=request.content
+        )
+        
+        # Update session timestamp
+        db.update_session_timestamp(request.session_id)
+        
+        from datetime import datetime
+        return ChatMessage(
+            id=str(message_id),
+            session_id=request.session_id,
+            message_type=request.role,  # Corrected from role to message_type to match model
+            content=request.content,
+            timestamp=datetime.now()
+        )
+        
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Error saving message: {str(e)}")
 
 
 @app.get("/", tags=["Health"])

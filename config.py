@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).parent
 
 # Pinecone Configuration
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "rag")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 # Embedding Model Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
@@ -23,7 +23,7 @@ EMBEDDING_DIMENSION = 384  # Dimension for all-MiniLM-L6-v2
 # File Upload Configuration
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))
 UPLOAD_DIR.mkdir(exist_ok=True)
-MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 10485760))  # 10MB default
+MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 31457280))  # 30MB default
 
 # Text Chunking Configuration
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 800))
@@ -34,10 +34,10 @@ DATABASE_PATH = BASE_DIR / "chat_history.db"
 
 # API Configuration
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
-API_PORT = int(os.getenv("API_PORT", 8000))
+API_PORT = int(os.getenv("API_PORT", 8001))
 
 # CORS Configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001").split(",")
 
 # Retrieval Configuration
 DEFAULT_TOP_K = int(os.getenv("DEFAULT_TOP_K", 5))

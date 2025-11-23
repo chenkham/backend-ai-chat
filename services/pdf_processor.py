@@ -1,7 +1,7 @@
 """
 PDF processing service for text extraction and chunking.
 """
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from pathlib import Path
 from typing import List, Dict, Any
 import config
@@ -30,9 +30,13 @@ class PDFProcessor:
             text = ""
             
             for page_num, page in enumerate(reader.pages):
-                page_text = page.extract_text()
-                if page_text:
-                    text += f"\n\n--- Page {page_num + 1} ---\n\n{page_text}"
+                try:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += f"\n\n--- Page {page_num + 1} ---\n\n{page_text}"
+                except Exception as e:
+                    print(f"Error extracting text from page {page_num}: {e}")
+                    continue
             
             return text.strip()
         except Exception as e:
@@ -51,6 +55,10 @@ class PDFProcessor:
         """
         # Extract text
         raw_text = self.extract_text_from_pdf(pdf_path)
+        
+        if not raw_text:
+            print(f"Warning: No text extracted from {filename}")
+            return []
         
         # Clean text
         cleaned_text = clean_text(raw_text)

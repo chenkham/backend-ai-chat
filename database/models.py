@@ -22,6 +22,8 @@ class PDFUploadResponse(BaseModel):
     message: str
     chunks_processed: int
     filename: str
+    pdf_id: Optional[str] = None
+    number_of_chunks: Optional[int] = None
 
 
 class QueryRequest(BaseModel):
@@ -65,3 +67,30 @@ class ChatHistoryResponse(BaseModel):
     success: bool
     messages: List[ChatMessage]
     session_id: Optional[str] = None
+
+
+class Session(BaseModel):
+    """Model for a chat session."""
+    id: str
+    name: str
+    mode: str  # "chat" or "pdf"
+    pdf_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class CreateSessionRequest(BaseModel):
+    """Request to create a new session."""
+    name: str
+    mode: str = Field(..., pattern="^(chat|pdf)$")
+    pdf_id: Optional[str] = None
+
+
+class SessionsResponse(BaseModel):
+    """Response with list of sessions."""
+    sessions: List[Session]
+
+
+class MessagesResponse(BaseModel):
+    """Response with messages for a session."""
+    messages: List[ChatMessage]
