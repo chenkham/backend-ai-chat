@@ -12,16 +12,16 @@ class EmbeddingService:
     def __init__(self):
         self.model_name = config.EMBEDDING_MODEL_NAME
         self.model = None
-        self._load_model()
     
     def _load_model(self):
-        """Load the Sentence-Transformers model."""
-        try:
-            print(f"Loading embedding model: {self.model_name}")
-            self.model = SentenceTransformer(self.model_name)
-            print(f"Model loaded successfully. Dimension: {config.EMBEDDING_DIMENSION}")
-        except Exception as e:
-            raise Exception(f"Error loading embedding model: {str(e)}")
+        """Load the Sentence-Transformers model lazily."""
+        if self.model is None:
+            try:
+                print(f"Loading embedding model: {self.model_name}")
+                self.model = SentenceTransformer(self.model_name)
+                print(f"Model loaded successfully. Dimension: {config.EMBEDDING_DIMENSION}")
+            except Exception as e:
+                raise Exception(f"Error loading embedding model: {str(e)}")
     
     def generate_embedding(self, text: str) -> List[float]:
         """
@@ -34,7 +34,7 @@ class EmbeddingService:
             Embedding vector as list of floats
         """
         if not self.model:
-            raise Exception("Embedding model not loaded")
+            self._load_model()
         
         try:
             embedding = self.model.encode(text, convert_to_numpy=True)
@@ -54,7 +54,7 @@ class EmbeddingService:
             List of embedding vectors
         """
         if not self.model:
-            raise Exception("Embedding model not loaded")
+            self._load_model()
         
         try:
             embeddings = self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
