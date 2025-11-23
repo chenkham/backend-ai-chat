@@ -2,5 +2,6 @@ fastapi
 uvicorn[standard]
 pypdf
 python-dotenv
+python-multipart
 pinecone
 cohere
