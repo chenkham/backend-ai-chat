@@ -8,7 +8,7 @@ from datetime import datetime
 
 class ChatMessage(BaseModel):
     """Model for a single chat message."""
-    id: Optional[int] = None
+    id: Optional[str] = None
     session_id: str
     message_type: str  # "user" or "assistant"
     content: str
