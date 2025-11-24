@@ -22,7 +22,15 @@ EMBEDDING_DIMENSION = 384  # Dimension for Cohere embed-english-light-v3.0
 # File Upload Configuration
 # Use /tmp for serverless/container environments (Render, Vercel, etc.)
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/tmp/uploads"))
-UPLOAD_DIR.mkdir(exist_ok=True)
+# Create the upload directory only if the runtime allows writes (e.g., /tmp on Vercel/Render)
+if not UPLOAD_DIR.exists():
+    try:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        # In read‑only environments the directory may not be creatable; fallback to /tmp
+        print(f"Warning: could not create upload dir {UPLOAD_DIR}: {e}")
+        UPLOAD_DIR = Path("/tmp/uploads")
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 31457280))  # 30MB default
 
 # Text Chunking Configuration
