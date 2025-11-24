@@ -46,7 +46,7 @@ class AppwriteChatDatabase:
                     "session_id": session_id,
                     "message_type": message_type,
                     "content": content,
-                    "metadata": metadata_json,
+                    # "metadata": metadata_json, # Temporarily disabled due to schema mismatch
                     "timestamp": datetime.now().isoformat()
                 }
             )

@@ -85,12 +85,12 @@ class AppwriteService:
             self.databases.create_collection(
                 database_id=config.APPWRITE_DATABASE_ID,
                 collection_id=collection_id,
-                name=name
+                name=name,
+                permissions=["role:all"] # Make sure it's accessible
             )
             
         # Check/Create Attributes
-        # Note: This is a simplified check. In prod, you'd check each attribute existence.
-        # Here we just try to create them and ignore "already exists" errors.
+        # We try to create them. If they exist, Appwrite raises an error which we catch.
         for attr in attributes:
             try:
                 if attr['type'] == 'string':
@@ -101,6 +101,7 @@ class AppwriteService:
                         size=attr.get('size', 255),
                         required=attr['required']
                     )
+                    print(f"Created attribute: {attr['key']}")
                 elif attr['type'] == 'datetime':
                     self.databases.create_datetime_attribute(
                         database_id=config.APPWRITE_DATABASE_ID,
@@ -108,9 +109,15 @@ class AppwriteService:
                         key=attr['key'],
                         required=attr['required']
                     )
-                # Add other types if needed
+                    print(f"Created attribute: {attr['key']}")
+                
+                # Wait a bit for attribute to be available (Appwrite is async)
+                import time
+                time.sleep(0.2)
+                
             except Exception as e:
                 # Attribute likely already exists
+                # print(f"Attribute {attr['key']} exists or error: {e}")
                 pass
 
     def upload_file(self, file_content: bytes, filename: str) -> str:
