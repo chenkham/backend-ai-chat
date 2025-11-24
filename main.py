@@ -154,7 +154,10 @@ async def save_message_endpoint(request: SaveMessageWrapperRequest):
         )
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         from fastapi import HTTPException
+        # Return the actual error message for debugging
         raise HTTPException(status_code=500, detail=f"Error saving message: {str(e)}")
 
 
