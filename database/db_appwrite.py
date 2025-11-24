@@ -34,21 +34,26 @@ class AppwriteChatDatabase:
         """Save a chat message to Appwrite."""
         from appwrite.id import ID
         
-        metadata_json = json.dumps(metadata) if metadata else None
+        # Appwrite might prefer empty string over None for optional string attributes
+        metadata_json = json.dumps(metadata) if metadata else "{}"
         
-        result = self.appwrite.databases.create_document(
-            database_id=self.db_id,
-            collection_id=self.collection_id,
-            document_id=ID.unique(),
-            data={
-                "session_id": session_id,
-                "message_type": message_type,
-                "content": content,
-                "metadata": metadata_json,
-                "timestamp": datetime.now().isoformat()
-            }
-        )
-        return result['$id']
+        try:
+            result = self.appwrite.databases.create_document(
+                database_id=self.db_id,
+                collection_id=self.collection_id,
+                document_id=ID.unique(),
+                data={
+                    "session_id": session_id,
+                    "message_type": message_type,
+                    "content": content,
+                    "metadata": metadata_json,
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            return result['$id']
+        except Exception as e:
+            print(f"❌ Error saving message to Appwrite: {e}")
+            raise e
     
     def get_chat_history(
         self, 
