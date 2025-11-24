@@ -33,6 +33,14 @@ CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 100))
 # Use /tmp for serverless/container environments
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "/tmp/chat_history.db"))
 
+# Appwrite Configuration
+APPWRITE_ENDPOINT = os.getenv("APPWRITE_ENDPOINT", "https://cloud.appwrite.io/v1")
+APPWRITE_PROJECT_ID = os.getenv("APPWRITE_PROJECT_ID")
+APPWRITE_API_KEY = os.getenv("APPWRITE_API_KEY")
+APPWRITE_DATABASE_ID = os.getenv("APPWRITE_DATABASE_ID", "chat-db")
+APPWRITE_COLLECTION_ID = os.getenv("APPWRITE_COLLECTION_ID", "chat-history")
+APPWRITE_BUCKET_ID = os.getenv("APPWRITE_BUCKET_ID", "pdf-storage")
+
 # API Configuration
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", 8001))

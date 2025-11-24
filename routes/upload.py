@@ -82,6 +82,9 @@ async def upload_pdf(file: UploadFile = File(...)):
         }
 
         
+    except HTTPException:
+        # Re-raise HTTP exceptions with their original status codes
+        raise
     except Exception as e:
         print(f"Error processing PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")

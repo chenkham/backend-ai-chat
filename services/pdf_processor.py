@@ -101,6 +101,17 @@ class PDFProcessor:
         
         with open(file_path, 'wb') as f:
             f.write(file_content)
+            
+        # Upload to Appwrite Storage if configured
+        try:
+            if config.APPWRITE_PROJECT_ID:
+                from services.appwrite_service import get_appwrite_service
+                appwrite = get_appwrite_service()
+                if appwrite:
+                    file_id = appwrite.upload_file(file_content, filename)
+                    print(f"Uploaded to Appwrite Storage: {file_id}")
+        except Exception as e:
+            print(f"Failed to upload to Appwrite: {e}")
         
         return file_path
 

@@ -262,9 +262,21 @@ class ChatDatabase:
 _db_instance = None
 
 
-def get_database() -> ChatDatabase:
+def get_database():
     """Get or create the database singleton instance."""
     global _db_instance
     if _db_instance is None:
-        _db_instance = ChatDatabase()
+        # Check if Appwrite is configured
+        if config.APPWRITE_PROJECT_ID and config.APPWRITE_API_KEY:
+            try:
+                from database.db_appwrite import AppwriteChatDatabase
+                _db_instance = AppwriteChatDatabase()
+                print("Using Appwrite Database")
+            except Exception as e:
+                print(f"Failed to initialize Appwrite Database: {e}. Falling back to SQLite.")
+                _db_instance = ChatDatabase()
+        else:
+            _db_instance = ChatDatabase()
+            print("Using SQLite Database")
+            
     return _db_instance

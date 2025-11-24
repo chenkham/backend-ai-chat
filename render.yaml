@@ -27,3 +27,15 @@ services:
         value: 5
       - key: CORS_ORIGINS
         value: "*"
+      - key: APPWRITE_ENDPOINT
+        sync: false
+      - key: APPWRITE_PROJECT_ID
+        sync: false
+      - key: APPWRITE_API_KEY
+        sync: false
+      - key: APPWRITE_DATABASE_ID
+        value: "chat-db"
+      - key: APPWRITE_COLLECTION_ID
+        value: "chat-history"
+      - key: APPWRITE_BUCKET_ID
+        value: "pdf-storage"
