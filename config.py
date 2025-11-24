@@ -31,7 +31,7 @@ if not UPLOAD_DIR.exists():
         print(f"Warning: could not create upload dir {UPLOAD_DIR}: {e}")
         UPLOAD_DIR = Path("/tmp/uploads")
         UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 31457280))  # 30MB default
+MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 4718592))  # 4.5MB for Vercel serverless
 
 # Text Chunking Configuration
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 800))

@@ -1,8 +1,11 @@
 fastapi
 uvicorn[standard]
 pypdf
+pdfplumber
 python-dotenv
 python-multipart
 pinecone
 cohere
 appwrite
+requests
+Pillow
