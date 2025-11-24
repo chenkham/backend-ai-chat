@@ -269,11 +269,14 @@ def get_database():
         # Check if Appwrite is configured
         if config.APPWRITE_PROJECT_ID and config.APPWRITE_API_KEY:
             try:
+                print("Attempting to initialize Appwrite Database...")
                 from database.db_appwrite import AppwriteChatDatabase
                 _db_instance = AppwriteChatDatabase()
-                print("Using Appwrite Database")
+                print("✅ Using Appwrite Database")
             except Exception as e:
-                print(f"Failed to initialize Appwrite Database: {e}. Falling back to SQLite.")
+                import traceback
+                traceback.print_exc()
+                print(f"❌ Failed to initialize Appwrite Database: {e}. Falling back to SQLite.")
                 _db_instance = ChatDatabase()
         else:
             _db_instance = ChatDatabase()
