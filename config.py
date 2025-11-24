@@ -54,7 +54,8 @@ API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", 8001))
 
 # CORS Configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://0.0.0.0:8001").split(",")
+# Add your frontend domain here
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://0.0.0.0:8001,https://ai-chat-bot.appwrite.network").split(",")
 
 # Retrieval Configuration
 DEFAULT_TOP_K = int(os.getenv("DEFAULT_TOP_K", 5))
